@@ -6,15 +6,20 @@ import {
   OneToMany,
 } from "typeorm";
 import Ad from "./Ad";
+import { ObjectType, Field } from "type-graphql";
 
 @Entity()
+@ObjectType()
 export default class Category extends BaseEntity {
+  @Field()
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 100 })
+  @Field() // type graphql
+  @Column({ length: 100 }) // type typeorm
   name: string;
 
+  @Field(() => [Ad])
   @OneToMany(() => Ad, (ad) => ad.category)
   ads: Ad[];
 }
