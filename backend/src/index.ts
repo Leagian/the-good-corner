@@ -7,6 +7,80 @@ import Category from "./entities/Category";
 import Tag from "./entities/Tag";
 import { In, Like } from "typeorm";
 import cors from "cors";
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
+import { GraphQLError } from "graphql";
+
+const typeDefs = `#graphql
+
+type Category {
+  id: ID
+  name: string
+}
+
+type Tag {
+  id: ID
+  name: string
+}
+
+type Ad {
+  id: ID
+  title: String
+  description: String
+  price: float
+  category: Category
+  tags: [Tag]
+}
+
+type Query {
+  ads: [Ad]
+  getAdbyId(id: ID): Ad
+}
+
+input TagInput {
+  name: String
+}
+
+type Mutation {
+  createTag(data: TagInput): Tag
+}
+`;
+
+const resolvers = {
+  Query: {
+    ads: async () => {
+      Ad.find({ relations: { category: true, tags: true } });
+    },
+    getAdbyId: async (_: any, { id }: { id: string }) => {
+      const ad = await Ad.findOne({
+        where: { id: parseInt(id, 10) },
+        relations: { category: true, tags: true },
+      });
+      if (!ad) throw new GraphQLError("ad not found");
+      return ad;
+    },
+  },
+  Mutation: {
+    createTag: async (
+      _: any,
+      { data: { name } }: { data: { name: string } }
+    ) => {
+      const newTag = Tag.create({ name });
+      const errors = await validate(newTag);
+      if (errors.length > 0)
+        throw new GraphQLError("invalid tag", { extensions: { errors } });
+      return newTag.save();
+    },
+  },
+};
+
+const server = new ApolloServer({ typeDefs, resolvers });
+
+startStandaloneServer(server, {
+  listen: { port: 4000 },
+}).then(({ url }) => {
+  console.log(`server ready on ${url}`);
+});
 
 const app = express();
 const port = 4000;
