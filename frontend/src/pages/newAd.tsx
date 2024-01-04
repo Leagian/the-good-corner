@@ -4,36 +4,13 @@ import { FormEvent, useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import Select from "react-select";
-import { gql, useMutation } from "@apollo/client";
-
-const CREATE_AD_MUTATION = gql`
-  mutation CreatedAd($data: NewAdInput!) {
-    createdAd(data: $data) {
-      id
-    }
-  }
-`;
+import {
+  useAllTagsQuery,
+  useCreateAdMutation,
+} from "@/graphql/generated/schema";
 
 export default function NewAd() {
-  const [createAd] = useMutation<
-    { createdAd: { id: number } },
-    {
-      data: {
-        title: "string";
-        owner: "string";
-        price: number;
-        location: "string";
-        picture: "string";
-        category: {
-          id: number;
-        };
-        tags: {
-          id: number;
-        }[];
-      };
-    }
-  >(CREATE_AD_MUTATION);
-
+  const [createAd] = useCreateAdMutation();
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
@@ -43,14 +20,8 @@ export default function NewAd() {
       .catch(console.error);
   }, []);
 
-  const [tags, setTags] = useState<Tag[]>([]);
-
-  useEffect(() => {
-    axios
-      .get<Tag[]>("http://localhost:4000/tags")
-      .then((res) => setTags(res.data))
-      .catch(console.error);
-  }, []);
+  const { data } = useAllTagsQuery();
+  const tags = data?.tags || [];
 
   const tagOptions = tags;
 
@@ -66,7 +37,7 @@ export default function NewAd() {
 
     createAd({ variables: { data: formJSON } })
       .then((res) => {
-        router.push(`/ads/${res.data?.createdAd.id}`);
+        router.push(`/ads/${res.data?.createAd.id}`);
       })
       .catch(console.error);
   };

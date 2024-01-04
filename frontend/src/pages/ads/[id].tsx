@@ -1,51 +1,17 @@
 import Layout from "@/components/Layout";
-import { AdDetails as AdDetailsType } from "@/types";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import axios from "axios";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { MapPinIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/solid";
-import { gql, useQuery } from "@apollo/client";
-
-const GET_AD_DETAIL = gql`
-  query GetAdById($getAdByIdId: Int!) {
-    getAdById(id: $getAdByIdId) {
-      id
-      title
-      description
-      picture
-      price
-      location
-      owner
-      tags {
-        id
-        name
-      }
-    }
-  }
-`;
-
-type AdDetails = {
-  id: number;
-  title: string;
-  description: string;
-  picture: string;
-  price: number;
-  location: string;
-  owner: string;
-  tags: {
-    id: number;
-    name: string;
-  }[];
-};
+import { useAdDetailsQuery } from "@/graphql/generated/schema";
 
 export default function AdDetails() {
   const router = useRouter();
   const { id } = router.query;
 
-  const { data, error } = useQuery<{ getAdById: AdDetails }>(GET_AD_DETAIL, {
+  const { data } = useAdDetailsQuery({
     variables: { adId: parseInt(id as string) },
     skip: typeof id === "undefined",
   });

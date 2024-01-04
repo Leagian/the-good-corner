@@ -1,32 +1,8 @@
-import { useEffect, useState } from "react";
 import AdCard from "./AdCard";
-import axios from "axios";
-import { Ad } from "@/types";
-import { gql, useQuery } from "@apollo/client";
-
-const GET_RECENT_ADS = gql`
-  query Ads {
-    ads {
-      id
-      title
-      price
-      picture
-      category {
-        name
-      }
-    }
-  }
-`;
-
-type RecentAd = {
-  id: number;
-  title: string;
-  price: number;
-  picture: string;
-};
+import { useRecentAdsQuery } from "@/graphql/generated/schema";
 
 export default function RecentAds() {
-  const { data } = useQuery<{ ads: RecentAd[] }>(GET_RECENT_ADS);
+  const { data } = useRecentAdsQuery();
 
   const ads = data?.ads || [];
 
