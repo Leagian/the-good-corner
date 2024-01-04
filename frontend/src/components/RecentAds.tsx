@@ -2,18 +2,33 @@ import { useEffect, useState } from "react";
 import AdCard from "./AdCard";
 import axios from "axios";
 import { Ad } from "@/types";
+import { gql, useQuery } from "@apollo/client";
+
+const GET_RECENT_ADS = gql`
+  query Ads {
+    ads {
+      id
+      title
+      price
+      picture
+      category {
+        name
+      }
+    }
+  }
+`;
+
+type RecentAd = {
+  id: number;
+  title: string;
+  price: number;
+  picture: string;
+};
 
 export default function RecentAds() {
-  const [ads, setAds] = useState<Ad[]>([]);
+  const { data } = useQuery<{ ads: RecentAd[] }>(GET_RECENT_ADS);
 
-  useEffect(() => {
-    axios
-      .get<Ad[]>("http://localhost:4000/ads")
-      .then((res) => {
-        setAds(res.data);
-      })
-      .catch(console.error);
-  }, []);
+  const ads = data?.ads || [];
 
   return (
     <div className="pt-6">

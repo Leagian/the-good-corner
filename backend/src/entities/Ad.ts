@@ -11,7 +11,7 @@ import {
 import { Length, Min } from "class-validator";
 import Category from "./Category";
 import Tag from "./Tag";
-import { ObjectType, Field } from "type-graphql";
+import { ObjectType, Field, InputType, Float, Int } from "type-graphql";
 @Entity()
 @ObjectType()
 export default class Ad extends BaseEntity {
@@ -64,4 +64,25 @@ export default class Ad extends BaseEntity {
     cascade: true,
   })
   tags: Tag[];
+}
+
+@InputType()
+export class AdInput {
+  @Field()
+  title: string;
+
+  @Field()
+  owner: string;
+
+  @Field(() => Float)
+  price: number;
+
+  @Field()
+  picture: string;
+
+  @Field()
+  location: string;
+
+  @Field(() => Int)
+  category: number;
 }
